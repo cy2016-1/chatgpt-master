@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+openai:
+  apiKey: sk-ikyCWGpsOAqeQ3p9pvKdTkFJjXI57tyZ6XutvvSSa5FF
+  model: gpt-3.5-turbo
+  api_endPoint: https://api.openai.com/v1/chat/completions
+  temperature: "0.6"
