@@ -73,7 +73,7 @@ springboot
 4.  支持语音对话
 ![输入图片说明](%E7%95%8C%E9%9D%A2%E4%BB%8B%E7%BB%8D.png)
 5.支持余额查询，自定义ApiKey和token大小
-![输入图片说明](%E8%AE%BE%E7%BD%AE%E4%BB%8B%E7%BB%8D.png)
+
 #### 参与贡献
 
 1.  Fork 本仓库
