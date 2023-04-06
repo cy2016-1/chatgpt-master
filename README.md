@@ -16,7 +16,7 @@ springboot
 
 2. 微软azure语音服务的使用
     a.Azure 订阅 - 免费创建订阅
-    
+    ![输入图片说明](%E5%BE%AE%E8%BD%AFAzure%E6%9C%8D%E5%8A%A1.png)
     b.在 Azure 门户中创建语音资源。
     ![输入图片说明](%E5%88%9B%E5%BB%BA%E8%AF%AD%E9%9F%B3%E8%B5%84%E6%BA%90.png)
     
