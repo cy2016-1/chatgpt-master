@@ -13,11 +13,11 @@ import java.io.IOException;
 public class AudioUtil {
     public static String convertAudioToWav( MultipartFile audioFile,String ffmpegPath) throws IOException, InterruptedException {
         String audioFileName="audio.wav";
-        String classpath = ResourceUtils.getURL("classpath:").getPath();
-        // 构造原始音频文件保存目录
-        String inputFilePath = classpath + "static/originalAudio/" ;
+//        String classpath = ResourceUtils.getURL("classpath:").getPath();
+        // 构造原始音频文件保存目录 保存至电脑本地
+        String inputFilePath = "/Users/lee/Desktop/audio/input";
         //构建格式化后音频文件保存目录
-        String outputFilePath =  classpath + "static/convertedAudio/";
+        String outputFilePath =  "/Users/lee/Desktop/audio/output";
         File inputExist=new File(inputFilePath);
         if(!inputExist.exists()){
             inputExist.mkdirs();

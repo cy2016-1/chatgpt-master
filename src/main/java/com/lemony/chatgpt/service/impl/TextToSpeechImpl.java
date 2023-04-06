@@ -27,9 +27,11 @@ public class TextToSpeechImpl implements TextToSpeechService {
         SpeechConfig config = SpeechConfig.fromSubscription(SPEECH_KEY, SERVICE_REGION);
         config.setSpeechSynthesisVoiceName(tts.getLanguage());
         // 获取classpath路径
-        String classpath = ResourceUtils.getURL("classpath:").getPath();
+//        String classpath = ResourceUtils.getURL("classpath:").getPath();
         // 构建生成语音的保存目录:static
-        String outputFilePath = classpath + "static/" ;
+//        String outputFilePath = classpath + "static/" ;
+        //生成语音文件保存到本地
+        String outputFilePath="/Users/lee/Desktop/audio/output";
         //创建语音文件
         File fileExits=new File(outputFilePath);
         if(!fileExits.exists()){
