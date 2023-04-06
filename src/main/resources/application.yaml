@@ -2,7 +2,23 @@ server:
   port: 8080
 
 openai:
-  apiKey: sk-ikyCWGpsOAqeQ3p9pvKdTkFJjXI57tyZ6XutvvSSa5FF
+  apiKey: sk-xxxxxx
   model: gpt-3.5-turbo
   api_endPoint: https://api.openai.com/v1/chat/completions
   temperature: "0.6"
+  # 查询订阅的API
+  subscription_url: https://api.openai.com/v1/dashboard/billing/subscription
+  # 查询用量的API
+  billing_url: https://api.openai.com/v1/dashboard/billing/usage
+  max_tokens: "1024"
+
+
+azure:
+#  语音服务密钥
+  SPEECH_KEY: xxxxxx
+#  语音服务地区
+  SERVICE_REGION: eastus
+#ffmpeg 可执行文件所在的绝对路径
+ffmpeg:
+  path: /usr/local/ffmpeg/bin/ffmpeg
+

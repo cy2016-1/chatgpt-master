@@ -8,4 +8,6 @@ import java.util.List;
 public class ChatRequest {
     private List<MessageHistory> messageHistory;
     Boolean isContextChat;
+    private String apiKey;
+    private Integer maxTokens;
 }

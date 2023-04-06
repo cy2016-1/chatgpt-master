@@ -1,4 +1,4 @@
-package com.lemony.chatgpt.openAiUtil;
+package com.lemony.chatgpt.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
