@@ -56,6 +56,7 @@ springboot
     这里是列表文本添加环境变量后，请从控制台窗口运行 source ~/.bash_profile，使更改生效。
     
     e.在后端配置文件application.yaml文件中，将密钥和区域设置成自己的密钥和区域
+![输入图片说明](%E6%9B%BF%E6%8D%A2%E5%AF%86%E9%92%A5.png)
     
 
 3. 音频格式化
