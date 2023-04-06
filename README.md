@@ -75,7 +75,9 @@ springboot
 3.  支持选择是否开启“连续对话”，由于token会消耗费用，关闭连续对话可以节省token
 4.  支持语音对话
 ![输入图片说明](%E7%95%8C%E9%9D%A2%E4%BB%8B%E7%BB%8D.png)
+
 5.支持余额查询，自定义ApiKey和token大小
+![输入图片说明](%E8%AE%BE%E7%BD%AE%E4%BB%8B%E7%BB%8D.png)
 
 
 #### 参与贡献
