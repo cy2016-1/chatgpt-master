@@ -94,7 +94,7 @@ public class GptApiServiceImpl implements GptApiService {
         }
 
         //聊天记录处理
-        List<Map<String, String>> messages = dealRequest(request);
+        List<Map<String, String>> messages = dealRequest(request,max_tokens);
         // 构造请求体
         Map<String, Object> params = MapUtil.ofEntries(
 //                MapUtil.entry("stream", true),
@@ -136,9 +136,10 @@ public class GptApiServiceImpl implements GptApiService {
         return s.toString();
     }
 
-    private  List<Map<String, String>> dealRequest(ChatRequest request){
+    private  List<Map<String, String>> dealRequest(ChatRequest request,Integer max_tokens){
         List<Map<String, String>> messages = new ArrayList<>();
         List<MessageHistory> histories=request.getMessageHistory();
+        StringBuilder builder = new StringBuilder();
         //是否开启上下文对话
         if(request.getIsContextChat()){
             for (MessageHistory messageHistory : histories) {
@@ -149,6 +150,15 @@ public class GptApiServiceImpl implements GptApiService {
                         MapUtil.entry("content", content)
                 );
                 messages.add(userMessage);
+                // 拼接所有的message
+                builder.append(content).append(role);
+                // 如果字符数超过max_tokens，删除最早的message
+                while (calculateLength(builder.toString()) > max_tokens) {
+                    messages.remove(0);
+                    String firstMessageContent = messages.get(0).toString();
+                    builder.delete(0, calculateLength(firstMessageContent));
+                    System.out.println("如果字符数超过max_tokens，删除最早的message");
+                }
             }
         }else{
             MessageHistory messageHistory=histories.get(histories.size()-1);
@@ -161,5 +171,24 @@ public class GptApiServiceImpl implements GptApiService {
             messages.add(userMessage);
         }
         return messages;
+    }
+
+    /**
+     * 计算字符串的长度，一个中文字符计算为两个token，4个英文字符为一个token
+     */
+    private int calculateLength(String str) {
+        int length = 0;
+        int cnLength=0;
+        int enLength=0;
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c >= 0x4E00 && c <= 0x9FA5) {
+                cnLength += 2;
+            } else {
+                enLength += 1;
+            }
+        }
+        length=cnLength+enLength/4;
+        return length;
     }
 }
