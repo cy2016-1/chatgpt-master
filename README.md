@@ -17,12 +17,15 @@ springboot
 2. 微软azure语音服务的使用
 
     a.Azure 订阅 - 免费创建订阅
+
     ![输入图片说明](%E5%BE%AE%E8%BD%AFAzure%E6%9C%8D%E5%8A%A1.png)
 
     b.在 Azure 门户中创建语音资源。
+
     ![输入图片说明](%E5%88%9B%E5%BB%BA%E8%AF%AD%E9%9F%B3%E8%B5%84%E6%BA%90.png)
     
     c.获取语音资源密钥和区域。 部署语音资源后，选择“转到资源”以查看和管理密钥。
+
     ![输入图片说明](%E8%8E%B7%E5%8F%96%E8%AF%AD%E9%9F%B3%E8%B5%84%E6%BA%90.png)
 
     d.设置环境变量。必须对应用程序进行身份验证才能访问认知服务资源。
@@ -53,16 +56,28 @@ springboot
         export SPEECH_KEY=your-key
         export SPEECH_REGION=your-region
     ```
-    这里是列表文本添加环境变量后，请从控制台窗口运行 source ~/.bash_profile，使更改生效。
+    添加环境变量后，请从控制台窗口运行 source ~/.bashrc，使更改生效。
     
     e.在后端配置文件application.yaml文件中，将密钥和区域设置成自己的密钥和区域
-![输入图片说明](%E6%9B%BF%E6%8D%A2%E5%AF%86%E9%92%A5.png)
+
+    ![输入图片说明](%E6%9B%BF%E6%8D%A2%E5%AF%86%E9%92%A5.png)
     
 
 3. 音频格式化
     a.微软语音转文字服务要求的音频格式为:采样率16000HZ、深度为16的wav格式
     b.如果前端录入的语音满足上述格式，则不需要进行格式转换
     c.转换格式可以用到FFMPEG框架,需要电脑本地安装FFMPEG，需注意安装容易出错，各种踩坑
+
+4. 语音保存路径自行修改
+
+   在AudioUtil中
+
+    ![输入图片说明](%E8%AF%AD%E9%9F%B3%E8%B7%AF%E5%BE%841.png)
+
+   在TextToSpeechImpl中
+
+    ![输入图片说明](%E8%AF%AD%E9%9F%B3%E8%B7%AF%E5%BE%842.png)
+    
 
 
 
