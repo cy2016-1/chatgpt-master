@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 
 @RestController
@@ -21,13 +24,6 @@ public class GptController {
     private String api_key;
     @Autowired
     GptApiService gptApiService;
-    //gpt3.5-turbo 联系上下文
-    @PostMapping("/chat")
-    public R getChat4(@RequestBody ChatRequest request) throws IOException, TimeoutException {
-        String text = gptApiService.generateMessage(request);
-        System.out.println(text);
-        return R.ok().put("data", text);
-    }
     //查询余额
     @PostMapping("/getBalance")
     public R getBilling2(@RequestBody BalanceRequest request){
@@ -44,5 +40,17 @@ public class GptController {
         BigDecimal balance=total.subtract(total_usage).setScale(2, RoundingMode.HALF_UP);
         return R.ok().put("total",total.toString()).put("usage",total_usage.toString()).put("balance",balance.toString());
     }
+    //异步请求
+    @PostMapping("/chat")
+    public CompletableFuture<R> getChat(@RequestBody ChatRequest request)throws IOException, TimeoutException  {
+        CompletableFuture<String> future = gptApiService.generateMessageAsync(request);
+        return future.thenApply(message -> {
+            System.out.println(message);
+
+            return R.ok().put("data", message);
+        });
+    }
+
+
 
 }

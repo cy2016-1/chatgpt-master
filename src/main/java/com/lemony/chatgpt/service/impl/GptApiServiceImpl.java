@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.rmi.ServerException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeoutException;
 
 @Service
@@ -25,6 +27,8 @@ public class GptApiServiceImpl implements GptApiService {
     private RestTemplate restTemplate;
     @Autowired
     private  OpenAIConfig openAIConfig;
+    @Autowired
+    ThreadPoolExecutor executor;
 
     //查询余额
     @Override
@@ -77,46 +81,58 @@ public class GptApiServiceImpl implements GptApiService {
 
         return total_usage;
     }
-
-    //使用的模型是gpt-3.5-turbo
+    //异步请求
     @Override
-    public String generateMessage(ChatRequest request) throws ServerException, TimeoutException {
-        String apiKey=request.getApiKey();
-        String model=openAIConfig.getModel();
-        Integer max_tokens=request.getMaxTokens();
-        //如果前端不设置apiKey则默认使用配置文件的
-        if(StringUtils.isBlank(apiKey)){
-            apiKey=openAIConfig.getApiKey();
-        }
-        //如果前端不设置max_tokens 则默认使用配置文件的
-        if(max_tokens==null){
-            max_tokens=openAIConfig.getMaxTokens();
-        }
+    public CompletableFuture<String> generateMessageAsync(ChatRequest request) throws ServerException, TimeoutException{
+        CompletableFuture<String> future=CompletableFuture.supplyAsync(()->{
+            String apiKey=request.getApiKey();
+            String model=openAIConfig.getModel();
+            Integer max_tokens=request.getMaxTokens();
+            //如果前端不设置apiKey则默认使用配置文件的
+            if(StringUtils.isBlank(apiKey)){
+                apiKey=openAIConfig.getApiKey();
+            }
+            //如果前端不设置max_tokens 则默认使用配置文件的
+            if(max_tokens==null){
+                max_tokens=openAIConfig.getMaxTokens();
+            }
 
-        //聊天记录处理
-        List<Map<String, String>> messages = dealRequest(request,max_tokens);
-        // 构造请求体
-        Map<String, Object> params = MapUtil.ofEntries(
+            //聊天记录处理
+            List<Map<String, String>> messages = dealRequest(request,max_tokens);
+            // 构造请求体
+            Map<String, Object> params = MapUtil.ofEntries(
 //                MapUtil.entry("stream", true),
-                MapUtil.entry("max_tokens", max_tokens),
-                MapUtil.entry("model", model),
-                MapUtil.entry("temperature", openAIConfig.getTemperature()),
-                MapUtil.entry("messages", messages)
-        );
-        String requestBodyJson = JSONUtil.toJsonStr(params);
-        System.out.println("请求体:"+requestBodyJson);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(apiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson, headers);
-        ResponseEntity<String> responseEntity = null;
-        try {
-            responseEntity = restTemplate.exchange(openAIConfig.getApi_endPoint(), HttpMethod.POST, requestEntity, String.class);
-        } catch (RestClientException e) {
-            e.printStackTrace();
-        }
-        String message=getGPT3Answer(responseEntity);
-        return message;
+                    MapUtil.entry("max_tokens", max_tokens),
+                    MapUtil.entry("model", model),
+                    MapUtil.entry("temperature", openAIConfig.getTemperature()),
+                    MapUtil.entry("messages", messages)
+            );
+            String requestBodyJson = JSONUtil.toJsonStr(params);
+            System.out.println("请求体:"+requestBodyJson);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(apiKey);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson, headers);
+            ResponseEntity<String> responseEntity = null;
+            try {
+                responseEntity = restTemplate.exchange(openAIConfig.getApi_endPoint(), HttpMethod.POST, requestEntity, String.class);
+            } catch (RestClientException e) {
+                e.printStackTrace();
+            }
+            String message= null;
+
+            try {
+                message = getGPT3Answer(responseEntity);
+            } catch (ServerException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
+
+            return message;
+
+        },executor);
+        return future;
     }
 
     //gpt-3.5-turbo
@@ -157,7 +173,7 @@ public class GptApiServiceImpl implements GptApiService {
                     messages.remove(0);
                     String firstMessageContent = messages.get(0).toString();
                     builder.delete(0, firstMessageContent.length());
-                    System.out.println("如果字符数超过max_tokens，删除最早的message");
+                    System.out.println("字符数超过max_tokens，删除最早的message");
                 }
             }
         }else{
