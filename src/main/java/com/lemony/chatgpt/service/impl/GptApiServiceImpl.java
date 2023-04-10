@@ -156,7 +156,7 @@ public class GptApiServiceImpl implements GptApiService {
                 while (calculateLength(builder.toString()) > max_tokens) {
                     messages.remove(0);
                     String firstMessageContent = messages.get(0).toString();
-                    builder.delete(0, calculateLength(firstMessageContent));
+                    builder.delete(0, firstMessageContent.length());
                     System.out.println("如果字符数超过max_tokens，删除最早的message");
                 }
             }
