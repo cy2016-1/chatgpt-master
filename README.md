@@ -77,7 +77,9 @@ springboot
    在TextToSpeechImpl中
 
     ![输入图片说明](%E8%AF%AD%E9%9F%B3%E8%B7%AF%E5%BE%842.png)
-    
+
+5. 前后端Websocket连接地址需保持一致
+    ![输入图片说明](websocket%E5%9C%B0%E5%9D%80.png)    
 
 
 
@@ -90,10 +92,14 @@ springboot
 2.  可实现联系上下文对话
 3.  支持选择是否开启“连续对话”，由于token会消耗费用，关闭连续对话可以节省token
 4.  支持语音对话
-![输入图片说明](%E7%95%8C%E9%9D%A2%E4%BB%8B%E7%BB%8D.png)
-
 5.支持余额查询，自定义ApiKey和token大小
 ![输入图片说明](%E8%AE%BE%E7%BD%AE%E4%BB%8B%E7%BB%8D.png)
+
+6.支持流式响应
+7.支持多会话
+8.支持聊天记录以图片形式导出
+
+####页面介绍
 
 
 #### 参与贡献
