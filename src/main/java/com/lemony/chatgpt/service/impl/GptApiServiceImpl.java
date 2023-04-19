@@ -1,11 +1,15 @@
 package com.lemony.chatgpt.service.impl;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.text.UnicodeUtil;
+import cn.hutool.http.Header;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.lemony.chatgpt.config.OpenAIConfig;
 import com.lemony.chatgpt.pojo.*;
 import com.lemony.chatgpt.service.GptApiService;
+import com.lemony.chatgpt.service.WebSocketServer;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
+import java.io.*;
 import java.math.BigDecimal;
 import java.rmi.ServerException;
 import java.text.SimpleDateFormat;
@@ -20,6 +25,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class GptApiServiceImpl implements GptApiService {
@@ -29,6 +36,48 @@ public class GptApiServiceImpl implements GptApiService {
     private  OpenAIConfig openAIConfig;
     @Autowired
     ThreadPoolExecutor executor;
+
+    @Override
+    public void generateMessage(ChatRequest request, WebSocketServer webSocketServer) throws IOException {
+        String apiKey=request.getApiKey();
+        String model=openAIConfig.getModel();
+        Integer max_tokens=request.getMaxTokens();
+        //如果前端不设置apiKey则默认使用配置文件的
+        if(StringUtils.isBlank(apiKey)){
+            apiKey=openAIConfig.getApiKey();
+        }
+        //如果前端不设置max_tokens 则默认使用配置文件的
+        if(max_tokens==null){
+            max_tokens=openAIConfig.getMaxTokens();
+        }
+        //聊天记录处理
+        List<Map<String, String>> messages = dealRequest(request,max_tokens);
+        // 构造请求体
+        Map<String, Object> params = MapUtil.ofEntries(
+                MapUtil.entry("stream", true),
+                MapUtil.entry("max_tokens", max_tokens),
+                MapUtil.entry("model", model),
+                MapUtil.entry("temperature", openAIConfig.getTemperature()),
+                MapUtil.entry("messages", messages)
+        );
+        String requestBodyJson = JSONUtil.toJsonStr(params);
+        System.out.println("请求体:"+requestBodyJson);
+        HttpResponse responseEntity = null;
+        try {
+            responseEntity=HttpRequest.post(openAIConfig.getApi_endPoint())
+                    .header(Header.CONTENT_TYPE, "application/json")
+                    .header(Header.AUTHORIZATION, "Bearer " + apiKey)
+                    .body(JSONUtil.toJsonStr(params))
+                    .executeAsync();
+        } catch (RestClientException e) {
+            e.printStackTrace();
+        }
+        try {
+            response(responseEntity,webSocketServer);
+        } catch (ServerException e) {
+            e.printStackTrace();
+        }
+    }
 
     //查询余额
     @Override
@@ -81,7 +130,14 @@ public class GptApiServiceImpl implements GptApiService {
 
         return total_usage;
     }
-    //异步请求
+
+    /**
+     * @Deprecated
+     * @param request
+     * @return
+     * @throws ServerException
+     * @throws TimeoutException
+     */
     @Override
     public CompletableFuture<String> generateMessageAsync(ChatRequest request) throws ServerException, TimeoutException{
         CompletableFuture<String> future=CompletableFuture.supplyAsync(()->{
@@ -96,7 +152,6 @@ public class GptApiServiceImpl implements GptApiService {
             if(max_tokens==null){
                 max_tokens=openAIConfig.getMaxTokens();
             }
-
             //聊天记录处理
             List<Map<String, String>> messages = dealRequest(request,max_tokens);
             // 构造请求体
@@ -135,7 +190,13 @@ public class GptApiServiceImpl implements GptApiService {
         return future;
     }
 
-    //gpt-3.5-turbo
+    /**
+     * @Deprecated
+     * @param responseEntity
+     * @return
+     * @throws ServerException
+     * @throws TimeoutException
+     */
     private String getGPT3Answer(ResponseEntity<String> responseEntity) throws ServerException, TimeoutException {
         String responseBody = responseEntity.getBody();
         Answer answer= JSONObject.parseObject(responseBody,Answer.class);
@@ -150,6 +211,25 @@ public class GptApiServiceImpl implements GptApiService {
             return s.substring(4,s.length());
         }
         return s.toString();
+    }
+    //流式响应
+    private void response(HttpResponse result,WebSocketServer webSocketServer) throws IOException {
+        // 处理数据
+        String streamData;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(result.bodyStream()));
+        while((streamData= reader.readLine()) != null){
+            String msgResult = UnicodeUtil.toString(streamData);
+            // 正则提取content内容
+            Matcher matcher = Pattern.compile("\"content\":\"(.*?)\"").matcher(msgResult);
+            if(matcher.find()) {
+                String aiMsg =matcher.group(1).replace("\\n", "\n")
+                        .replace("\\t", "\t")
+                        .replace("\\", "\"");;
+              webSocketServer.sendMessage(aiMsg);
+            }
+        }
+        // 关闭流
+        reader.close();
     }
 
     private  List<Map<String, String>> dealRequest(ChatRequest request,Integer max_tokens){
