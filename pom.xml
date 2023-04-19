@@ -56,6 +56,11 @@
             <artifactId>okhttp</artifactId>
             <version>3.14.8</version>
         </dependency>
+        <!--websocket-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
