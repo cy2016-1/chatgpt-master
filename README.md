@@ -95,7 +95,7 @@ springboot
 
 #### 页面介绍
 ![输入图片说明](%E9%A1%B5%E9%9D%A2%E4%BB%8B%E7%BB%8D.png)
-![输入图片说明](%E8%AE%BE%E7%BD%AE%E4%BB%8B%E7%BB%8D.png)
+
 #### 参与贡献
 
 1.  Fork 本仓库
