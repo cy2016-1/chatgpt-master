@@ -40,17 +40,21 @@ public class GptController {
         BigDecimal balance=total.subtract(total_usage).setScale(2, RoundingMode.HALF_UP);
         return R.ok().put("total",total.toString()).put("usage",total_usage.toString()).put("balance",balance.toString());
     }
+
+    /**
+     * @Deprecated
+     * @param request
+     * @return
+     * @throws IOException
+     * @throws TimeoutException
+     */
     //异步请求
     @PostMapping("/chat")
     public CompletableFuture<R> getChat(@RequestBody ChatRequest request)throws IOException, TimeoutException  {
         CompletableFuture<String> future = gptApiService.generateMessageAsync(request);
         return future.thenApply(message -> {
             System.out.println(message);
-
             return R.ok().put("data", message);
         });
     }
-
-
-
 }
